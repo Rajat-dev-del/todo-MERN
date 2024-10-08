@@ -14,7 +14,7 @@ export const register = async (request, response) => {
         const { username, email, password } = await request.body;
         //validation error
         if(!username || !email || !password){
-            return response.status(400).json({ message: "All fields are required" });
+            return response.status(400).json({ errors: "All fields are required" });
         }
         const validation = userSchema.safeParse({ username, email, password });
         if(!validation.success){
@@ -24,7 +24,7 @@ export const register = async (request, response) => {
         // check if user already exists
         const user = await User.findOne({ email });
         if (user) {
-            return response.status(400).json({ message: "User already exists" });
+            return response.status(400).json({ errors: "User already exists" });
         }
         const hashPassword = await bcrypt.hash(password,10);
         // create new user
@@ -36,7 +36,7 @@ export const register = async (request, response) => {
             response.status(201).json({ message: "User created successfully", newUser, token });
         }
     } catch (error) {
-        response.status(500).json({ message: "Error Occured", error });
+        response.status(500).json({ errors: "Error Occured", error });
     }
 };
 
@@ -44,18 +44,18 @@ export const login = async(request, response) => {
     const {email, password} = request.body;
     try {
         if(!email || !password){
-            return response.status(400).json({message:"All fields are required"})
+            return response.status(400).json({errors:"All fields are required"})
         }
         const user = await User.findOne({email}).select("+password");
         const checkPassword = await bcrypt.compare(password, user.password);
         if(!user || !checkPassword){
-            return response.status(400).json({message:"invalid email or password"})
+            return response.status(400).json({errors:"invalid email or password"})
         }
         const token = await genrateTokenAndSaveInCookies(user._id,response);
 
         response.status(200).json({ message:"User login successfully",user});
     } catch (error) {
-        response.status(500).json({ message: "Error Occured", error });
+        response.status(500).json({ errors: "Error Occured", error });
     }
 };
 
@@ -66,6 +66,6 @@ export const logout = async (request, response) => {
         })
         response.status(200).json({ message:"User logged out successfully" });
     } catch (error) {
-        response.status(500).json({ message: "Error Occured", error });
+        response.status(500).json({ errors: "Error Occured", error });
     }
 };
